@@ -2,7 +2,10 @@ window.onload = loadTasks;
 
 function loadTasks() {
     const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    tasks.forEach(task => createTaskElement(task.name, task.deadline, task.completed, task.isOverdue, task.id));
+    tasks.forEach(task => {
+        const validDeadline = task.deadline ? formatDate(task.deadline) : ''; // Validate deadline
+        createTaskElement(task.name, validDeadline, task.completed, task.isOverdue, task.id);
+    });
 }
 
 function saveTasks() {
@@ -10,7 +13,7 @@ function saveTasks() {
         return {
             id: taskElement.dataset.id,
             name: taskElement.querySelector('input[type="text"]').value,
-            deadline: taskElement.querySelector('input[type="date"]').value,
+            deadline: formatDate(taskElement.querySelector('input[type="date"]').value),
             completed: taskElement.querySelector('input[type="checkbox"]').checked,
             isOverdue: taskElement.classList.contains('overdue')
         };
@@ -20,8 +23,18 @@ function saveTasks() {
 
 function isOverdue(deadline) {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ignore time part for accurate comparison
+
     const taskDeadline = new Date(deadline);
-    return taskDeadline < today;
+    taskDeadline.setHours(0, 0, 0, 0);
+
+    return taskDeadline < today; // Check if deadline is in the past
+}
+
+function formatDate(date) {
+    const d = new Date(date);
+    if (isNaN(d)) return ''; // Handle invalid dates gracefully
+    return d.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
 }
 
 function createTaskElement(name, deadline, completed, isOverdueFlag, id = Date.now()) {
@@ -29,10 +42,10 @@ function createTaskElement(name, deadline, completed, isOverdueFlag, id = Date.n
 
     const task = document.createElement('div');
     task.className = 'task';
-    task.dataset.id = id; // Add an ID to each task
+    task.dataset.id = id;
 
     if (completed) task.classList.add('completed');
-    if (isOverdueFlag) task.classList.add('overdue'); // Apply overdue status if stored
+    if (isOverdueFlag) task.classList.add('overdue');
 
     const taskName = document.createElement('input');
     taskName.type = 'text';
@@ -41,7 +54,7 @@ function createTaskElement(name, deadline, completed, isOverdueFlag, id = Date.n
 
     const taskDeadline = document.createElement('input');
     taskDeadline.type = 'date';
-    taskDeadline.value = deadline;
+    taskDeadline.value = formatDate(deadline);
     taskDeadline.readOnly = true;
 
     const taskCompleted = document.createElement('input');
@@ -66,7 +79,7 @@ function createTaskElement(name, deadline, completed, isOverdueFlag, id = Date.n
             taskDeadline.readOnly = true;
             updateButton.textContent = 'Update';
 
-            // Check overdue status after saving
+            // Update overdue status after saving
             if (isOverdue(taskDeadline.value)) {
                 task.classList.add('overdue');
             } else {
@@ -93,12 +106,12 @@ function addTask() {
     const taskName = document.getElementById('taskName').value.trim();
     const taskDeadline = document.getElementById('taskDeadline').value;
 
-    if (!taskName || !taskDeadline) {
-        showAlert('Please enter both task name and deadline.', 'error');
+    if (!taskName || !taskDeadline || isNaN(new Date(taskDeadline))) {
+        showAlert('Please enter a valid task name and deadline.', 'error');
         return;
     }
 
-    const overdueFlag = isOverdue(taskDeadline); // Check if the task is overdue when adding it
+    const overdueFlag = isOverdue(taskDeadline);
     createTaskElement(taskName, taskDeadline, false, overdueFlag);
 
     document.getElementById('taskName').value = '';
