@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Manager</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Task Manager</h1>
+    <div class="addtion_div">
+      <input id="taskName" type="text" placeholder="Task Name" />
+      <input id="taskDeadline" type="date" />
+      <button onclick="addTask()">Add Task</button>
+    </div>
+    <div id="taskList"></div>
+    <script src="main.js"></script>
+  </body>
+</html>
